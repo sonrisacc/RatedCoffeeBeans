@@ -3,7 +3,6 @@ var cheerio = require('cheerio');
 var fs = require('fs');
 var fileLocation = __dirname + '/output/data.json';
 var page = 'http://www.coffeereview.com/highest-rated-coffees/';
-// var links = [];
 
 function findTotalPageNum(url) {
   return new Promise((resolve, reject) => {
@@ -127,8 +126,6 @@ findTotalPageNum(page)
   .then(totalPage => linkGenerator(totalPage))
   .then(links => scrapeMultiUrl(links))
   .then(content => writeFile(fileLocation, content));
-
-// scrapeMultiUrl();
 
 // Promise.all([scrapeUrl(page1), scrapeUrl(page)]).then(value => {
 //   console.log(value);
