@@ -78,6 +78,7 @@ function scrapeUrl(url) {
 //   console.log(value);
 //   return value;
 // });
+
 function scrapeMultiUrl() {
   return Promise.all(links.map(cur => scrapeUrl(cur))).then(value => {
     console.log(value.length);
