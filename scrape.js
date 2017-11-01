@@ -3,8 +3,8 @@ var cheerio = require('cheerio');
 var page = 'http://www.coffeereview.com/highest-rated-coffees/';
 var page1 = 'http://www.coffeereview.com/highest-rated-coffees/page/1';
 var page2 = 'http://www.coffeereview.com/highest-rated-coffees/page/2';
-
 var links = [page, page1, page2];
+
 var result = [];
 function scrapeUrl(url) {
   return new Promise((resolve, reject) => {
@@ -78,8 +78,11 @@ function scrapeUrl(url) {
 //   console.log(value);
 //   return value;
 // });
+function scrapeMultiUrl() {
+  return Promise.all(links.map(cur => scrapeUrl(cur))).then(value => {
+    console.log(value.length);
+    return value;
+  });
+}
 
-Promise.all(links.map(cur => scrapeUrl(cur))).then(value => {
-  console.log(value);
-  return value;
-});
+scrapeMultiUrl();
