@@ -18,7 +18,7 @@ function findTotalPageNum(url) {
         //   .first()
         //   .text()
         //   .slice(totalPageKey + 3, totalPageKey + 5);
-        var totalPage = 3;
+        var totalPage = 6;
       }
       resolve(totalPage);
     });
@@ -95,24 +95,28 @@ function scrapeUrl(url) {
 
 function scrapeMultiUrl(inputLinks) {
   return Promise.all(inputLinks.map(cur => scrapeUrl(cur))).then(value => {
-    console.log(value.length);
-    return JSON.stringify(value);
+    console.log('number of each group of inputLinks', value.length);
+    var result = [].concat(...value);
+    return JSON.stringify(result);
   });
 }
 
 function linkGenerator(totalPage) {
   return new Promise((resolve, reject) => {
-    var links = [];
-    for (var i = 0; i <= totalPage; i++) {
+    var links = [page];
+    for (var i = 1; i <= totalPage; i++) {
       var newPage = page;
       links = links.concat(newPage.concat(`page/${i}`));
     }
+    console.log('totoal number of links', links.length);
     resolve(links);
   });
 }
 
 function writeFile(outputFolder, content) {
   return new Promise((resolve, reject) => {
+    //if file doesnt exist writeFile
+    //if file exist, append to file
     fs.writeFile(outputFolder, content, 'utf8', err => {
       if (err) {
         console.log(err);
@@ -122,10 +126,41 @@ function writeFile(outputFolder, content) {
   });
 }
 
+function groupLinksHandler(inputLinks) {
+  return new Promise((resolve, reject) => {
+    let groupLink = [];
+    let counter = 0;
+    for (var i = 0; i < inputLinks.length; i += 3) {
+      // console.log('i', i);
+      // console.log('no ' + i + ' group', inputLinks.slice(i, i + 3));
+      groupLink.push(inputLinks.slice(i, i + 3));
+      counter++;
+    }
+
+    console.log('groups.length should be ' + counter, groupLink.length);
+    resolve(groupLink);
+  });
+}
+
+function groupScrapeUrlHandler(inputGroup) {
+  return new Promise((resolve, reject) => {
+    inputGroup.forEach(linkGroup =>
+      scrapeMultiUrl(linkGroup).then(content =>
+        writeFile(fileLocation, content)
+      )
+    );
+  });
+}
+
 findTotalPageNum(page)
   .then(totalPage => linkGenerator(totalPage))
-  .then(links => scrapeMultiUrl(links))
-  .then(content => writeFile(fileLocation, content));
+  .then(links => groupLinksHandler(links))
+  .then(groups => groupScrapeUrlHandler(groups));
+
+// findTotalPageNum(page)
+//   .then(totalPage => linkGenerator(totalPage))
+//   .then(links => scrapeMultiUrl(links))
+//   .then(content => writeFile(fileLocation, content));
 
 // Promise.all([scrapeUrl(page1), scrapeUrl(page)]).then(value => {
 //   console.log(value);
