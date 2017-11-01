@@ -1,11 +1,31 @@
 var request = require('request');
 var cheerio = require('cheerio');
+var fs = require('fs');
+var fileLocation = __dirname + '/output/data.json';
 var page = 'http://www.coffeereview.com/highest-rated-coffees/';
-var page1 = 'http://www.coffeereview.com/highest-rated-coffees/page/1';
-var page2 = 'http://www.coffeereview.com/highest-rated-coffees/page/2';
-var links = [page, page1, page2];
+// var links = [];
 
-var result = [];
+function findTotalPageNum(url) {
+  return new Promise((resolve, reject) => {
+    request(url, function(error, response, html) {
+      if (!error && response.statusCode == 200) {
+        var output = [];
+        var $ = cheerio.load(html);
+        var totalPageKey = $('div[class=wp-pagenavi]')
+          .first()
+          .text()
+          .indexOf('of');
+        // var totalPage = $('div[class=wp-pagenavi]')
+        //   .first()
+        //   .text()
+        //   .slice(totalPageKey + 3, totalPageKey + 5);
+        var totalPage = 3;
+      }
+      resolve(totalPage);
+    });
+  });
+}
+
 function scrapeUrl(url) {
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
@@ -53,16 +73,16 @@ function scrapeUrl(url) {
             .children()
             .attr('href');
 
-          var metadata = {
-            rating: parseInt(rating)
-            // brand: brand,
-            // bean: bean,
-            // reviewDate: reviewDate,
-            // price: price,
-            // brandUrl: brandUrl,
-            // beanUrl: beanUrl
+          var obj = {
+            rating: parseInt(rating),
+            brand: brand,
+            bean: bean,
+            reviewDate: reviewDate,
+            price: price,
+            brandUrl: brandUrl,
+            beanUrl: beanUrl
           };
-          output.push(metadata);
+          output.push(obj);
         });
       }
       resolve(output);
@@ -74,16 +94,43 @@ function scrapeUrl(url) {
     .catch(err => console.log(err));
 }
 
+function scrapeMultiUrl(inputLinks) {
+  return Promise.all(inputLinks.map(cur => scrapeUrl(cur))).then(value => {
+    console.log(value.length);
+    return JSON.stringify(value);
+  });
+}
+
+function linkGenerator(totalPage) {
+  return new Promise((resolve, reject) => {
+    var links = [];
+    for (var i = 0; i <= totalPage; i++) {
+      var newPage = page;
+      links = links.concat(newPage.concat(`page/${i}`));
+    }
+    resolve(links);
+  });
+}
+
+function writeFile(outputFolder, content) {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(outputFolder, content, 'utf8', err => {
+      if (err) {
+        console.log(err);
+      }
+      console.log('File saved');
+    });
+  });
+}
+
+findTotalPageNum(page)
+  .then(totalPage => linkGenerator(totalPage))
+  .then(links => scrapeMultiUrl(links))
+  .then(content => writeFile(fileLocation, content));
+
+// scrapeMultiUrl();
+
 // Promise.all([scrapeUrl(page1), scrapeUrl(page)]).then(value => {
 //   console.log(value);
 //   return value;
 // });
-
-function scrapeMultiUrl() {
-  return Promise.all(links.map(cur => scrapeUrl(cur))).then(value => {
-    console.log(value.length);
-    return value;
-  });
-}
-
-scrapeMultiUrl();
