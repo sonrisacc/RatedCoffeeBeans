@@ -1,30 +1,10 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var fs = require('fs');
-var fileLocation = __dirname + '/output/data.json';
+var fileLocation = __dirname + '/output';
 var page = 'http://www.coffeereview.com/highest-rated-coffees/';
 
-function findTotalPageNum(url) {
-  return new Promise((resolve, reject) => {
-    request(url, function(error, response, html) {
-      if (!error && response.statusCode == 200) {
-        var output = [];
-        var $ = cheerio.load(html);
-        var totalPageKey = $('div[class=wp-pagenavi]')
-          .first()
-          .text()
-          .indexOf('of');
-        // var totalPage = $('div[class=wp-pagenavi]')
-        //   .first()
-        //   .text()
-        //   .slice(totalPageKey + 3, totalPageKey + 5);
-        var totalPage = 6;
-      }
-      resolve(totalPage);
-    });
-  });
-}
-
+//scrape one link from the beanEntry page
 function scrapeUrl(url) {
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
@@ -93,14 +73,44 @@ function scrapeUrl(url) {
     .catch(err => console.log(err));
 }
 
-function scrapeMultiUrl(inputLinks) {
-  return Promise.all(inputLinks.map(cur => scrapeUrl(cur))).then(value => {
-    console.log('number of each group of inputLinks', value.length);
-    var result = [].concat(...value);
-    return JSON.stringify(result);
+//Export data to json file
+function writeFile(outputFolder, content) {
+  return new Promise((resolve, reject) => {
+    //if file doesnt exist writeFile
+    //if file exist, append to file
+    if (fs.readFile)
+      fs.writeFile(outputFolder, content, 'utf8', err => {
+        if (err) {
+          console.log(err);
+        }
+        console.log('File saved');
+      });
   });
 }
 
+//find total number of pages that contains coffee data
+function findTotalPageNum(url) {
+  return new Promise((resolve, reject) => {
+    request(url, function(error, response, html) {
+      if (!error && response.statusCode == 200) {
+        var output = [];
+        var $ = cheerio.load(html);
+        var totalPageKey = $('div[class=wp-pagenavi]')
+          .first()
+          .text()
+          .indexOf('of');
+        var totalPage = $('div[class=wp-pagenavi]')
+          .first()
+          .text()
+          .slice(totalPageKey + 3, totalPageKey + 5);
+        // var totalPage = 6;
+      }
+      resolve(totalPage);
+    });
+  });
+}
+
+//create an arr contains all the pages
 function linkGenerator(totalPage) {
   return new Promise((resolve, reject) => {
     var links = [page];
@@ -108,24 +118,12 @@ function linkGenerator(totalPage) {
       var newPage = page;
       links = links.concat(newPage.concat(`page/${i}`));
     }
-    console.log('totoal number of links', links.length);
+    console.log('total number of links', links.length);
     resolve(links);
   });
 }
 
-function writeFile(outputFolder, content) {
-  return new Promise((resolve, reject) => {
-    //if file doesnt exist writeFile
-    //if file exist, append to file
-    fs.writeFile(outputFolder, content, 'utf8', err => {
-      if (err) {
-        console.log(err);
-      }
-      console.log('File saved');
-    });
-  });
-}
-
+//breakdown arr into nested arr of groups of link
 function groupLinksHandler(inputLinks) {
   return new Promise((resolve, reject) => {
     let groupLink = [];
@@ -142,11 +140,21 @@ function groupLinksHandler(inputLinks) {
   });
 }
 
-function groupScrapeUrlHandler(inputGroup) {
+//scrape a group of links
+function scrapeMultiUrl(inputLinks) {
+  return Promise.all(inputLinks.map(cur => scrapeUrl(cur))).then(value => {
+    console.log('number of each group of inputLinks', value.length);
+    var result = [].concat(...value);
+    return JSON.stringify(result);
+  });
+}
+
+//scrape groups of links
+function groupScrapeUrlHandler(inputGroup, numberOfFiles) {
   return new Promise((resolve, reject) => {
-    inputGroup.forEach(linkGroup =>
+    inputGroup.forEach((linkGroup, index) =>
       scrapeMultiUrl(linkGroup).then(content =>
-        writeFile(fileLocation, content)
+        writeFile(`${fileLocation}/data${index}.json`, content)
       )
     );
   });
@@ -155,7 +163,7 @@ function groupScrapeUrlHandler(inputGroup) {
 findTotalPageNum(page)
   .then(totalPage => linkGenerator(totalPage))
   .then(links => groupLinksHandler(links))
-  .then(groups => groupScrapeUrlHandler(groups));
+  .then(groups => groupScrapeUrlHandler(groups, groups.length));
 
 // findTotalPageNum(page)
 //   .then(totalPage => linkGenerator(totalPage))
