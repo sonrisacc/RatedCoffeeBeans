@@ -23,7 +23,8 @@ function groupScrapeUrlHandler(inputGroup, numberOfFiles) {
 //   .then(links => helpers.groupLinksHandler(links))
 //   .then(groups => groupScrapeUrlHandler(groups, groups.length));
 
-helpers.scrapeOneBeanUrl(beanPage);
+// helpers.scrapeOneBeanUrl(beanPage);
+helpers.scrapeUrl(page);
 
 // findTotalPageNum(page)
 //   .then(totalPage => linkGenerator(totalPage))
