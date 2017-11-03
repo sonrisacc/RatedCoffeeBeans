@@ -2,6 +2,8 @@ import * as helpers from './utli/helper.js';
 
 const fileLocation = __dirname + '/output';
 const page = 'http://www.coffeereview.com/highest-rated-coffees/';
+const beanPage =
+  'http://www.coffeereview.com/review/el-aquila-pacamara-espresso/';
 //scrape groups of links
 function groupScrapeUrlHandler(inputGroup, numberOfFiles) {
   return new Promise((resolve, reject) => {
@@ -15,11 +17,13 @@ function groupScrapeUrlHandler(inputGroup, numberOfFiles) {
   });
 }
 
-helpers
-  .findTotalPageNum(page)
-  .then(totalPage => helpers.linkGenerator(totalPage))
-  .then(links => helpers.groupLinksHandler(links))
-  .then(groups => groupScrapeUrlHandler(groups, groups.length));
+// helpers
+//   .findTotalPageNum(page)
+//   .then(totalPage => helpers.linkGenerator(totalPage))
+//   .then(links => helpers.groupLinksHandler(links))
+//   .then(groups => groupScrapeUrlHandler(groups, groups.length));
+
+helpers.scrapeOneBeanUrl(beanPage);
 
 // findTotalPageNum(page)
 //   .then(totalPage => linkGenerator(totalPage))

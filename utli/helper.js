@@ -4,6 +4,67 @@ var fs = require('fs');
 const groupDividor = 3;
 const page = 'http://www.coffeereview.com/highest-rated-coffees/';
 
+//scrape specific bean info
+
+export function scrapeOneBeanUrl(url) {
+  return new Promise((resolve, reject) => {
+    request(url, function(error, response, html) {
+      if (!error && response.statusCode == 200) {
+        var $ = cheerio.load(html);
+        var bean = $('div[class=review-col1]')
+          .children('.review-title')
+          .last()
+          .text();
+        var location = $('div[class=review-col1]')
+          .children('.review-title')
+          .next()
+          .text();
+        var origin = $('div[class=review-col1]')
+          .children('.review-title')
+          .next()
+          .next()
+          .text();
+        var roast = $('div[class=review-col1]')
+          .children('.review-title')
+          .next()
+          .next()
+          .next()
+          .text();
+        var agtron = $('div[class=review-col2]')
+          .children()
+          .first()
+          .text();
+        var aroma = $('div[class=review-col2]')
+          .children()
+          .first()
+          .next()
+          .text();
+        var body = $('div[class=review-col2]')
+          .children()
+          .first()
+          .next()
+          .next()
+          .text();
+        var withMilk = $('div[class=review-col2]')
+          .children()
+          .last()
+          .text();
+        var obj = {
+          bean: bean,
+          location: location,
+          origin: origin,
+          roast: roast,
+          agtron: agtron,
+          aroma: aroma,
+          body: body,
+          withMilk: withMilk
+        };
+        console.log(obj);
+      }
+    });
+  });
+}
+
 //scrape one link from the beanEntry page
 export function scrapeUrl(url) {
   return new Promise((resolve, reject) => {
