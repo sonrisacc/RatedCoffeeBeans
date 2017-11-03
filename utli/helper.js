@@ -138,9 +138,11 @@ export function scrapeUrl(url) {
   );
 }
 
+//for adding the beandetail to each bean entry that are on onePage
 export function detailPageHandler(onePageDataEntry) {
-  var promises = [];
   // console.log('onePageDataEntry', onePageDataEntry);
+
+  var promises = [];
   onePageDataEntry.forEach(cur => {
     promises.push(
       scrapeOneBeanUrl(cur.beanUrl)
@@ -185,6 +187,7 @@ export function findTotalPageNum(url) {
           .text()
           .slice(totalPageKey + 3, totalPageKey + 5);
         // var totalPage = 6;
+        console.log('totalPage', totalPage);
       }
       resolve(totalPage);
     });

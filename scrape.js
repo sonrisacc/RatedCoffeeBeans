@@ -16,15 +16,15 @@ function groupScrapeUrlHandler(inputGroup, numberOfFiles) {
     );
   });
 }
-
-// helpers
-//   .findTotalPageNum(page)
-//   .then(totalPage => helpers.linkGenerator(totalPage))
-//   .then(links => helpers.groupLinksHandler(links))
-//   .then(groups => groupScrapeUrlHandler(groups, groups.length));
+//
+helpers
+  .findTotalPageNum(page)
+  .then(totalPage => helpers.linkGenerator(totalPage))
+  .then(links => helpers.groupLinksHandler(links))
+  .then(groups => groupScrapeUrlHandler(groups, groups.length));
 
 // helpers.scrapeOneBeanUrl(beanPage);
-helpers.scrapeUrl(page);
+// helpers.scrapeUrl(page);
 
 // findTotalPageNum(page)
 //   .then(totalPage => linkGenerator(totalPage))
