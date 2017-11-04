@@ -61,9 +61,9 @@ export function scrapeOneBeanUrl(url) {
           body: body,
           withMilk: withMilk
         };
-        console.log('64data,', !!obj);
-        resolve(obj);
       }
+      console.log('64data,', !!obj);
+      resolve(obj);
     });
   });
 }
@@ -126,10 +126,10 @@ export function scrapeUrl(url) {
             brandUrl: brandUrl,
             beanUrl: beanUrl
           };
-          console.log('127', !!output);
           output.push(obj);
         });
       }
+      console.log('132', !!output);
       resolve(output);
     });
   })
@@ -144,7 +144,8 @@ export function scrapeUrl(url) {
 export function detailPageHandler(onePageDataEntry) {
   var promises = [];
   console.log('onePageDataEntry', onePageDataEntry.length);
-  onePageDataEntry.forEach(bean => {
+  onePageDataEntry.map(bean => {
+    console.log('148 helper');
     promises.push(
       scrapeOneBeanUrl(bean.beanUrl)
         .then(beanDetailData => {
@@ -155,7 +156,7 @@ export function detailPageHandler(onePageDataEntry) {
   });
 
   return Promise.all(promises).then(data => {
-    console.log('data161', data.length);
+    console.log('data161 what is data', typeof data);
     return data;
   });
 }
@@ -237,7 +238,7 @@ export function scrapeMultiUrl(inputLinks, index, fileLocation) {
     .then(value => {
       console.log('number of each group of inputLinks', value[0]);
       var result = [].concat(...value);
-      console.log('240', result);
+      console.log('240', result.length);
       var content = JSON.stringify(result);
       return writeFile(`${fileLocation}/data${index}.json`, content);
     })
