@@ -8,7 +8,7 @@ const page = 'http://www.coffeereview.com/highest-rated-coffees/';
 export function scrapeOneBeanUrl(url, originalBean) {
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
-      if (!error && response.statusCode == 200) {
+      if (!error) {
         var $ = cheerio.load(html);
         var bean = $('div[class=review-col1]')
           .children('.review-title')
@@ -17,42 +17,58 @@ export function scrapeOneBeanUrl(url, originalBean) {
         var location = $('div[class=review-col1]')
           .children('.review-title')
           .next()
-          .text();
+          .text()
+          .slice(10);
         var origin = $('div[class=review-col1]')
           .children('.review-title')
           .next()
           .next()
-          .text();
+          .text()
+          .slice(8);
         var roast = $('div[class=review-col1]')
           .children('.review-title')
           .next()
           .next()
           .next()
-          .text();
+          .text()
+          .slice(7);
         var agtron = $('div[class=review-col2]')
           .children()
           .first()
           .next()
-          .text();
+          .text()
+          .slice(8);
         var aroma = $('div[class=review-col2]')
           .children()
           .first()
           .next()
           .next()
-          .text();
+          .text()
+          .slice(7);
+        var acidity = $('div[class=review-col2]')
+          .children()
+          .first()
+          .next()
+          .next()
+          .next()
+          .text()
+          .slice(9);
         var body = $('div[class=review-col2]')
           .children()
           .first()
           .next()
           .next()
           .next()
-          .text();
-        var withMilk = $('div[class=review-col2]')
-          .children()
-          .last()
-          .text();
+          .next()
+          .text()
+          .slice(6);
+        var withMilk =
+          $('div[class=review-col2]')
+            .children()
+            .last()
+            .text()
+            .slice(12) || undefined;
         var obj = {
-          bean: bean,
           location: location,
           origin: origin,
           roast: roast,
@@ -61,14 +77,10 @@ export function scrapeOneBeanUrl(url, originalBean) {
           body: body,
           withMilk: withMilk
         };
-      } else {
-        obj = {
-          fourOhFour: 404
-        };
       }
-      // console.log('line65', originalBean);
+
       obj = Object.assign(originalBean, obj);
-      // console.log('64data,', !!obj);
+      // console.log('64data,', obj);
       resolve(obj);
     });
   });
@@ -168,7 +180,6 @@ export function writeFile(outputFolder, content) {
           reject(err);
           return;
         }
-        console.log('File saved');
         resolve(`File written ${outputFolder}`);
       });
     }
@@ -179,7 +190,7 @@ export function writeFile(outputFolder, content) {
 export function findTotalPageNum(url) {
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
-      if (!error && response.statusCode == 200) {
+      if (!error) {
         var output = [];
         var $ = cheerio.load(html);
         var totalPageKey = $('div[class=wp-pagenavi]')
@@ -190,8 +201,6 @@ export function findTotalPageNum(url) {
           .first()
           .text()
           .slice(totalPageKey + 3, totalPageKey + 5);
-        // var totalPage = 3;
-        console.log('totalPage', totalPage);
       }
       resolve(totalPage);
     });
@@ -201,7 +210,7 @@ export function findTotalPageNum(url) {
 //create an arr contains all the pages
 export function linkGenerator(totalPage) {
   console.log('totalPage', totalPage);
-  var links = [];
+  var links = [page];
   for (var i = 1; i <= totalPage; i++) {
     var newPage = page;
     links = links.concat(`${newPage}page/${i}`);

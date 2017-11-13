@@ -1,10 +1,10 @@
-import * as helpers from './utli/helper.js';
+import * as helpers from './utli/scrapeHelper.js';
 const fileLocation = __dirname + '/output';
 
 const page = 'http://www.coffeereview.com/highest-rated-coffees';
-
-// const beanPage =
-//   'http://www.coffeereview.com/review/el-aquila-pacamara-espresso/';
+const page1 = 'http://www.coffeereview.com/highest-rated-coffees/page/27';
+const beanPage =
+  'http://www.coffeereview.com/review/ethiopia-yirga-natural-bedhatu/';
 
 //scrape groups of links
 //[  [  [10links],[10links],[]  ], [ [10links],[10links],[10links]  ]   ]
@@ -15,7 +15,6 @@ function groupScrapeUrlHandler(inputGroup) {
 
   return Promise.all(promises).then(data => {
     console.log('Whole process complete!', data);
-    //an arr of 'file written...'
   });
 }
 
@@ -25,15 +24,18 @@ helpers
   .then(links => helpers.groupLinksHandler(links))
   .then(groups => groupScrapeUrlHandler(groups));
 
-// helpers.scrapeOneBeanUrl(beanPage);
-// helpers.scrapeUrl(page);
+// helpers.scrapeOneBeanUrl(
+//   'http://www.coffeereview.com/review/hawaii-isla-kona-mauka/'
+// );
+
+//helpers.scrapeUrl(page1); working with hawaii
 
 // groupScrapeUrlHandler([
 //   ['http://www.coffeereview.com/highest-rated-coffees/page/33',
 //    'http://www.coffeereview.com/highest-rated-coffees/page/33'
 //    'http://www.coffeereview.com/highest-rated-coffees/page/33']
 // ]);
-// helpers.scrapeMultiUrl([page, page1]);
+// helpers.scrapeMultiUrl([page, page1], 1, fileLocation);
 
 // findTotalPageNum(page)
 //   .then(totalPage => linkGenerator(totalPage))
