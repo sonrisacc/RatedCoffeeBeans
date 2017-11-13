@@ -78,17 +78,14 @@ export function scrapeOneBeanUrl(url, originalBean) {
           withMilk: withMilk
         };
       }
-
-      obj = Object.assign(originalBean, obj);
-      // console.log('64data,', obj);
-      resolve(obj);
+      var finalBean = Object.assign(originalBean, obj);
+      resolve(finalBean);
     });
   });
 }
 
 //scrape one link from the beanEntry page
 export function scrapeUrl(url) {
-  console.log('scrapeUrlRunning');
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
       var output = [];
@@ -147,12 +144,10 @@ export function scrapeUrl(url) {
           output.push(obj);
         });
       }
-      // console.log('132', !!output);
       resolve(output || []);
     });
   })
     .then(data => {
-      // console.log('scrapeEntryPageReturned Obj', data);
       return detailPageHandler(data);
     })
     .catch(err => console.log(err));
@@ -160,13 +155,11 @@ export function scrapeUrl(url) {
 
 //for adding the beandetail to each bean entry that are on onePage
 export function detailPageHandler(onePageDataEntry) {
-  console.log('onePageDataEntry', onePageDataEntry.length);
   var promises = onePageDataEntry.map(bean => {
     return scrapeOneBeanUrl(bean.beanUrl, bean);
   });
 
   return Promise.all(promises).then(data => {
-    console.log('data156 what is data', typeof data);
     return data;
   });
 }
@@ -209,25 +202,20 @@ export function findTotalPageNum(url) {
 
 //create an arr contains all the pages
 export function linkGenerator(totalPage) {
-  console.log('totalPage', totalPage);
-  var links = [page];
+  var links = [];
   for (var i = 1; i <= totalPage; i++) {
     var newPage = page;
     links = links.concat(`${newPage}page/${i}`);
   }
-  console.log('total number of links send ', links.length);
   return links;
 }
 
 //breakdown arr into nested arr of groups of link
 export function groupLinksHandler(inputLinks) {
-  console.log('total number of links received ', inputLinks.length);
-
   var groupLink = [];
   for (var i = 0; i < inputLinks.length; i += groupDividor) {
     groupLink.push(inputLinks.slice(i, i + groupDividor));
   }
-  console.log('number of groups:', groupLink.length);
   return groupLink;
 }
 
@@ -239,9 +227,7 @@ export function scrapeMultiUrl(inputLinks, index, fileLocation) {
     })
   )
     .then(value => {
-      // console.log('number of each group of inputLinks');
       var result = [].concat(...value);
-      // console.log('240', result.length);
       var content = JSON.stringify(result);
       return writeFile(`${fileLocation}/data${index}.json`, content);
     })
