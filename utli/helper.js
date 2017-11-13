@@ -5,7 +5,7 @@ const groupDividor = 3;
 const page = 'http://www.coffeereview.com/highest-rated-coffees/';
 
 //scrape specific bean info
-export function scrapeOneBeanUrl(url) {
+export function scrapeOneBeanUrl(url, originalBean) {
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
       if (!error && response.statusCode == 200) {
@@ -61,8 +61,14 @@ export function scrapeOneBeanUrl(url) {
           body: body,
           withMilk: withMilk
         };
+      } else {
+        obj = {
+          fourOhFour: 404
+        };
       }
-      console.log('64data,', !!obj);
+      // console.log('line65', originalBean);
+      obj = Object.assign(originalBean, obj);
+      // console.log('64data,', !!obj);
       resolve(obj);
     });
   });
@@ -73,8 +79,8 @@ export function scrapeUrl(url) {
   console.log('scrapeUrlRunning');
   return new Promise((resolve, reject) => {
     request(url, function(error, response, html) {
+      var output = [];
       if (!error && response.statusCode == 200) {
-        var output = [];
         var $ = cheerio.load(html);
         $('div[class=review-content]').each(function(i, element) {
           var rating = $(this)
@@ -129,12 +135,12 @@ export function scrapeUrl(url) {
           output.push(obj);
         });
       }
-      console.log('132', !!output);
-      resolve(output);
+      // console.log('132', !!output);
+      resolve(output || []);
     });
   })
     .then(data => {
-      console.log('scrapeEntryPageReturned Obj', data.length);
+      // console.log('scrapeEntryPageReturned Obj', data);
       return detailPageHandler(data);
     })
     .catch(err => console.log(err));
@@ -142,21 +148,13 @@ export function scrapeUrl(url) {
 
 //for adding the beandetail to each bean entry that are on onePage
 export function detailPageHandler(onePageDataEntry) {
-  var promises = [];
   console.log('onePageDataEntry', onePageDataEntry.length);
-  onePageDataEntry.map(bean => {
-    console.log('148 helper');
-    promises.push(
-      scrapeOneBeanUrl(bean.beanUrl)
-        .then(beanDetailData => {
-          return Object.assign(bean, beanDetailData);
-        })
-        .catch(err => console.log(err))
-    );
+  var promises = onePageDataEntry.map(bean => {
+    return scrapeOneBeanUrl(bean.beanUrl, bean);
   });
 
   return Promise.all(promises).then(data => {
-    console.log('data161 what is data', typeof data);
+    console.log('data156 what is data', typeof data);
     return data;
   });
 }
@@ -167,10 +165,11 @@ export function writeFile(outputFolder, content) {
     if (fs.readFile) {
       fs.writeFile(outputFolder, content, 'utf8', err => {
         if (err) {
-          console.log(err);
+          reject(err);
+          return;
         }
         console.log('File saved');
-        resolve();
+        resolve(`File written ${outputFolder}`);
       });
     }
   }).catch(err => console.log(err));
@@ -202,43 +201,38 @@ export function findTotalPageNum(url) {
 //create an arr contains all the pages
 export function linkGenerator(totalPage) {
   console.log('totalPage', totalPage);
-  return new Promise((resolve, reject) => {
-    var links = [page];
-    for (var i = 1; i <= totalPage; i++) {
-      var newPage = page;
-      links = links.concat(newPage.concat(`page/${i}`));
-    }
-    console.log('total number of links send ', links.length);
-    resolve(links);
-  });
+  var links = [];
+  for (var i = 1; i <= totalPage; i++) {
+    var newPage = page;
+    links = links.concat(`${newPage}page/${i}`);
+  }
+  console.log('total number of links send ', links.length);
+  return links;
 }
 
 //breakdown arr into nested arr of groups of link
 export function groupLinksHandler(inputLinks) {
   console.log('total number of links received ', inputLinks.length);
-  return new Promise((resolve, reject) => {
-    var groupLink = [];
-    for (var i = 0; i < inputLinks.length; i += groupDividor) {
-      groupLink.push(inputLinks.slice(i, i + groupDividor));
-    }
-    console.log('number of groups:', groupLink.length);
-    resolve(groupLink);
-  });
+
+  var groupLink = [];
+  for (var i = 0; i < inputLinks.length; i += groupDividor) {
+    groupLink.push(inputLinks.slice(i, i + groupDividor));
+  }
+  console.log('number of groups:', groupLink.length);
+  return groupLink;
 }
 
-//scrape a group of links
+//scrape a group of links [pg1, pg2, pg3]
 export function scrapeMultiUrl(inputLinks, index, fileLocation) {
-  console.log('226 inputLinks', Array.isArray(inputLinks));
   return Promise.all(
     inputLinks.map(cur => {
-      console.log('228, wtf', cur);
       return scrapeUrl(cur);
     })
   )
     .then(value => {
-      console.log('number of each group of inputLinks', value[0]);
+      // console.log('number of each group of inputLinks');
       var result = [].concat(...value);
-      console.log('240', result.length);
+      // console.log('240', result.length);
       var content = JSON.stringify(result);
       return writeFile(`${fileLocation}/data${index}.json`, content);
     })

@@ -7,16 +7,15 @@ const page = 'http://www.coffeereview.com/highest-rated-coffees';
 //   'http://www.coffeereview.com/review/el-aquila-pacamara-espresso/';
 
 //scrape groups of links
+//[  [  [10links],[10links],[]  ], [ [10links],[10links],[10links]  ]   ]
 function groupScrapeUrlHandler(inputGroup) {
-  console.log('how many groups of links', inputGroup);
-  var promises = [];
-  inputGroup.forEach((linkGroup, index) => {
-    console.log('15,hey', linkGroup);
-    promises.push(helpers.scrapeMultiUrl(linkGroup, index, fileLocation));
+  var promises = inputGroup.map((linkGroup, index) => {
+    return helpers.scrapeMultiUrl(linkGroup, index, fileLocation);
   });
 
   return Promise.all(promises).then(data => {
-    console.log('Whole process complete!');
+    console.log('Whole process complete!', data);
+    //an arr of 'file written...'
   });
 }
 
@@ -30,7 +29,9 @@ helpers
 // helpers.scrapeUrl(page);
 
 // groupScrapeUrlHandler([
-//   ['http://www.coffeereview.com/highest-rated-coffees/page/33']
+//   ['http://www.coffeereview.com/highest-rated-coffees/page/33',
+//    'http://www.coffeereview.com/highest-rated-coffees/page/33'
+//    'http://www.coffeereview.com/highest-rated-coffees/page/33']
 // ]);
 // helpers.scrapeMultiUrl([page, page1]);
 
