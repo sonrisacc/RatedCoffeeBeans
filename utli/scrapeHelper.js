@@ -7,6 +7,7 @@ const page = 'http://www.coffeereview.com/highest-rated-coffees/';
 //scrape specific bean info
 export function scrapeOneBeanUrl(url, originalBean) {
   return new Promise((resolve, reject) => {
+    let obj = {};
     request(url, function(error, response, html) {
       if (!error) {
         var $ = cheerio.load(html);
@@ -38,6 +39,12 @@ export function scrapeOneBeanUrl(url, originalBean) {
           .next()
           .text()
           .slice(8);
+        var notes = $('div[class=review-content]')
+          .children('.subtitle')
+          .first()
+          .next()
+          .text();
+
         var aroma = $('div[class=review-col2]')
           .children()
           .first()
@@ -45,38 +52,53 @@ export function scrapeOneBeanUrl(url, originalBean) {
           .next()
           .text()
           .slice(7);
-        var acidity = $('div[class=review-col2]')
+
+        //
+        // var body = $('div[class=review-col2]')
+        //   .children()
+        //   .first()
+        //   .next()
+        //   .next()
+        //   .next()
+        //   .text()
+        //   .slice(6);
+        var withMilk = $('div[class=review-col2]')
           .children()
-          .first()
-          .next()
-          .next()
-          .next()
-          .text()
-          .slice(9);
-        var body = $('div[class=review-col2]')
-          .children()
-          .first()
-          .next()
-          .next()
-          .next()
-          .next()
-          .text()
-          .slice(6);
-        var withMilk =
-          $('div[class=review-col2]')
+          .last()
+          .text();
+        // .slice(12);
+        if (withMilk.slice(0, 4) === 'With') {
+          withMilk = withMilk.slice(11);
+          obj = {
+            location: location,
+            origin: origin,
+            roast: roast,
+            agtron: agtron,
+            aroma: aroma,
+            withMilk: withMilk,
+            notes: notes
+          };
+        } else {
+          var acidity = $('div[class=review-col2]')
             .children()
-            .last()
-            .text()
-            .slice(12) || undefined;
-        var obj = {
-          location: location,
-          origin: origin,
-          roast: roast,
-          agtron: agtron,
-          aroma: aroma,
-          body: body,
-          withMilk: withMilk
-        };
+            .first()
+            .next()
+            .next()
+            .next()
+            .text();
+          // .slice(18);
+          acidity = acidity.slice(18) || acidity.slice(8);
+
+          obj = {
+            location: location,
+            origin: origin,
+            roast: roast,
+            agtron: agtron,
+            aroma: aroma,
+            acidity: acidity,
+            notes: notes
+          };
+        }
       }
       var finalBean = Object.assign(originalBean, obj);
       resolve(finalBean);
@@ -148,6 +170,7 @@ export function scrapeUrl(url) {
     });
   })
     .then(data => {
+      console.log('163 running');
       return detailPageHandler(data);
     })
     .catch(err => console.log(err));

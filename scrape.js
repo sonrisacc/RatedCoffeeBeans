@@ -31,9 +31,11 @@ helpers
 //helpers.scrapeUrl(page1); working with hawaii
 
 // groupScrapeUrlHandler([
-//   ['http://www.coffeereview.com/highest-rated-coffees/page/33',
-//    'http://www.coffeereview.com/highest-rated-coffees/page/33'
-//    'http://www.coffeereview.com/highest-rated-coffees/page/33']
+//   [
+//     'http://www.coffeereview.com/highest-rated-coffees/page/13',
+//     'http://www.coffeereview.com/highest-rated-coffees/page/14',
+//     'http://www.coffeereview.com/highest-rated-coffees/page/15'
+//   ]
 // ]);
 // helpers.scrapeMultiUrl([page, page1], 1, fileLocation);
 
